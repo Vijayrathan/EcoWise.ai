@@ -1,0 +1,266 @@
+.habits-container {
+  padding: 2rem;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 70px);
+}
+
+.habits-header {
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+}
+
+.habits-header h1 {
+  color: #2c7a67;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.habits-header h1 i {
+  margin-right: 0.5rem;
+}
+
+.habits-header p {
+  color: #6c757d;
+  margin-bottom: 1rem;
+}
+
+.habits-header .add-habit-btn {
+  background-color: #2c7a67;
+  border-color: #2c7a67;
+}
+
+.habits-header .add-habit-btn:hover,
+.habits-header .add-habit-btn:focus {
+  background-color: #236355;
+  border-color: #236355;
+}
+
+.habits-header .add-habit-btn i {
+  margin-right: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .habits-header .add-habit-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+}
+
+.habits-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-group label {
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.filter-group select {
+  border-color: #e9ecef;
+}
+
+.filter-group select:focus {
+  border-color: #2c7a67;
+  box-shadow: 0 0 0 0.2rem rgba(44, 122, 103, 0.25);
+}
+
+.sort-direction {
+  padding: 0.375rem 0.75rem;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+}
+
+.loading-container .spinner-border {
+  width: 3rem;
+  height: 3rem;
+  color: #2c7a67;
+  margin-bottom: 1rem;
+}
+
+.loading-container p {
+  color: #6c757d;
+}
+
+.empty-habits {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+.empty-habits .empty-state-graphic {
+  font-size: 4rem;
+  color: #d1e7dd;
+  margin-bottom: 1.5rem;
+}
+
+.empty-habits h3 {
+  font-size: 1.5rem;
+  color: #2c7a67;
+  margin-bottom: 0.75rem;
+}
+
+.empty-habits p {
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.empty-habits button {
+  background-color: #2c7a67;
+  border-color: #2c7a67;
+}
+
+.empty-habits button:hover,
+.empty-habits button:focus {
+  background-color: #236355;
+  border-color: #236355;
+}
+
+.empty-habits button i {
+  margin-right: 0.5rem;
+}
+
+.habits-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.habit-card {
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.habit-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.habit-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.habit-category {
+  padding: 0.35rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.habit-category.category-transport {
+  background-color: #e3f2fd;
+  color: #0d6efd;
+}
+
+.habit-category.category-food {
+  background-color: #fff8e1;
+  color: #ffc107;
+}
+
+.habit-category.category-energy {
+  background-color: #fce4ec;
+  color: #e91e63;
+}
+
+.habit-category.category-waste {
+  background-color: #e8f5e9;
+  color: #4caf50;
+}
+
+.habit-category.category-water {
+  background-color: #e1f5fe;
+  color: #03a9f4;
+}
+
+.habit-category.category-shopping {
+  background-color: #f3e5f5;
+  color: #9c27b0;
+}
+
+.habit-date {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.habit-card-body {
+  padding: 1rem;
+}
+
+.habit-description {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.habit-impact {
+  font-size: 0.875rem;
+  color: #2c7a67;
+  display: flex;
+  align-items: center;
+}
+
+.habit-impact i {
+  margin-right: 0.5rem;
+}
+
+.habit-card-footer {
+  padding: 1rem;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.habit-status {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.habit-status.completed {
+  color: #4caf50;
+}
+
+.habit-status i {
+  margin-right: 0.5rem;
+}
+
+.habit-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
