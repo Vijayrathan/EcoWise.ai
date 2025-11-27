@@ -23,6 +23,9 @@ router.get("/:id/stats", userController.getUserStats);
 // GET /api/users/:id/badges - Get user badges
 router.get("/:id/badges", userController.getUserBadges);
 
+// GET /api/users/:id/dashboard - Get dashboard data
+router.get("/:id/dashboard", userController.getDashboardData);
+
 // POST /api/users/:id/preferences - Update user preferences
 router.post("/:id/preferences", userController.updateUserPreferences);
 

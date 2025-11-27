@@ -1,11 +1,19 @@
 const User = require("../models/User");
+const Habit = require("../models/Habit");
 const jwt = require("jsonwebtoken");
 
 // Get all users (admin only)
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select("-password");
-    res.status(200).json(users);
+    const usersWithName = users.map(user => {
+      const userObj = user.toObject();
+      userObj.name = user.firstName && user.lastName
+        ? `${user.firstName} ${user.lastName}`
+        : user.firstName || user.username;
+      return userObj;
+    });
+    res.status(200).json(usersWithName);
   } catch (error) {
     console.error("Error getting users:", error);
     res.status(500).json({ message: "Server error" });
@@ -21,7 +29,13 @@ exports.getUserById = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json(user);
+    const userResponse = user.toObject();
+    // Add name field (firstName + lastName, or username as fallback)
+    userResponse.name = user.firstName && user.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user.firstName || user.username;
+
+    res.status(200).json(userResponse);
   } catch (error) {
     console.error("Error getting user:", error);
     res.status(500).json({ message: "Server error" });
@@ -56,6 +70,11 @@ exports.registerUser = async (req, res) => {
     // Don't return password
     const userResponse = { ...user.toObject() };
     delete userResponse.password;
+    
+    // Add name field (firstName + lastName, or username as fallback)
+    userResponse.name = user.firstName && user.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user.firstName || user.username;
 
     res.status(201).json(userResponse);
   } catch (error) {
@@ -95,6 +114,11 @@ exports.loginUser = async (req, res) => {
     // Don't return password
     const userResponse = { ...user.toObject() };
     delete userResponse.password;
+    
+    // Add name field (firstName + lastName, or username as fallback)
+    userResponse.name = user.firstName && user.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user.firstName || user.username;
 
     // Send both user data and token
     res.status(200).json({
@@ -123,7 +147,13 @@ exports.updateUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json(user);
+    const userResponse = user.toObject();
+    // Add name field (firstName + lastName, or username as fallback)
+    userResponse.name = user.firstName && user.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user.firstName || user.username;
+
+    res.status(200).json(userResponse);
   } catch (error) {
     console.error("Error updating user:", error);
     res.status(500).json({ message: "Server error" });
@@ -184,9 +214,181 @@ exports.updateUserPreferences = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json(user);
+    const userResponse = user.toObject();
+    // Add name field (firstName + lastName, or username as fallback)
+    userResponse.name = user.firstName && user.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user.firstName || user.username;
+
+    res.status(200).json(userResponse);
   } catch (error) {
     console.error("Error updating user preferences:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// Get dashboard data for user
+exports.getDashboardData = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Verify user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get all habits for the user
+    const habits = await Habit.find({ user: userId }).sort({ date: -1 });
+
+    // Calculate challenges completed (completed habits)
+    const completedHabits = habits.filter((h) => h.isCompleted);
+    const ecoChallengesCompleted = completedHabits.length;
+
+    // Calculate carbon saved (sum of carbonFootprint from completed habits)
+    const carbonSaved = completedHabits.reduce(
+      (sum, habit) => sum + (habit.carbonFootprint || 0),
+      0
+    );
+
+    // Calculate day streak (consecutive days with completed habits)
+    let streakDays = 0;
+    if (completedHabits.length > 0) {
+      // Get unique dates with completions
+      const completionDates = new Set();
+      completedHabits
+        .filter((h) => h.completedDate)
+        .forEach((h) => {
+          const date = new Date(h.completedDate);
+          date.setHours(0, 0, 0, 0);
+          completionDates.add(date.getTime());
+        });
+
+      if (completionDates.size > 0) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        // Check if today or yesterday has a completion to start the streak
+        const hasToday = completionDates.has(today.getTime());
+        const hasYesterday = completionDates.has(yesterday.getTime());
+
+        if (hasToday || hasYesterday) {
+          // Start counting from the most recent day with a completion
+          let checkDate = hasToday ? new Date(today) : new Date(yesterday);
+          streakDays = 1;
+
+          // Count backwards day by day
+          while (streakDays < 365) {
+            checkDate.setDate(checkDate.getDate() - 1);
+            if (completionDates.has(checkDate.getTime())) {
+              streakDays++;
+            } else {
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // Get recent activities (last 10 habits, both completed and new)
+    const recentActivities = habits.slice(0, 10).map((habit) => {
+      if (habit.isCompleted && habit.completedDate) {
+        return {
+          action: "Completed challenge",
+          description: habit.description,
+          date: habit.completedDate,
+        };
+      } else {
+        return {
+          action: "New habit",
+          description: habit.description,
+          date: habit.date || habit.createdAt,
+        };
+      }
+    });
+
+    // Generate upcoming challenges based on user's habits and preferences
+    const upcomingChallenges = generateUpcomingChallenges(user, habits);
+
+    res.status(200).json({
+      ecoChallengesCompleted,
+      carbonSaved: Math.round(carbonSaved * 10) / 10, // Round to 1 decimal place
+      streakDays,
+      recentActivities,
+      upcomingChallenges,
+    });
+  } catch (error) {
+    console.error("Error getting dashboard data:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Helper function to generate upcoming challenges
+function generateUpcomingChallenges(user, habits) {
+  const challenges = [];
+  const completedCategories = new Set(
+    habits.filter((h) => h.isCompleted).map((h) => h.category)
+  );
+  const allCategories = new Set(habits.map((h) => h.category));
+
+  // Challenge pool based on categories
+  const challengePool = [
+    {
+      title: "Meatless Monday",
+      description: "Skip meat for a full day",
+      impact: "Saves ~8kg of CO2",
+      category: "diet",
+    },
+    {
+      title: "Energy Saver",
+      description: "Reduce electricity usage by 10%",
+      impact: "Saves ~5kg of CO2",
+      category: "energy",
+    },
+    {
+      title: "Zero Waste Day",
+      description: "Produce no waste for 24 hours",
+      impact: "Prevents landfill waste",
+      category: "waste",
+    },
+    {
+      title: "Public Transport Day",
+      description: "Use only public transport or bike",
+      impact: "Saves ~3kg of CO2",
+      category: "transport",
+    },
+    {
+      title: "Water Conservation",
+      description: "Reduce water usage by 20%",
+      impact: "Saves ~2kg of CO2",
+      category: "water",
+    },
+    {
+      title: "Plastic-Free Day",
+      description: "Avoid all single-use plastic",
+      impact: "Prevents plastic waste",
+      category: "waste",
+    },
+  ];
+
+  // Filter challenges based on user's activity
+  // Prioritize challenges in categories the user hasn't completed yet
+  const suggestedChallenges = challengePool
+    .filter((challenge) => {
+      // If user has no habits in this category, suggest it
+      if (!allCategories.has(challenge.category)) {
+        return true;
+      }
+      // If user hasn't completed this category, suggest it
+      if (!completedCategories.has(challenge.category)) {
+        return true;
+      }
+      // Otherwise, include it as a repeat challenge
+      return true;
+    })
+    .slice(0, 3); // Return top 3
+
+  return suggestedChallenges;
+}
