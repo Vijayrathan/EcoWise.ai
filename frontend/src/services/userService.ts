@@ -1,5 +1,5 @@
 import api from './api';
-import { User, UserStats, LoginRequest, RegisterRequest, LoginResponse, UserPreferences } from '../types/user.model';
+import { User, UserStats, LoginRequest, RegisterRequest, LoginResponse, UserPreferences, DashboardData } from '../types/user.model';
 
 export const userService = {
   register: async (userData: RegisterRequest): Promise<void> => {
@@ -36,6 +36,11 @@ export const userService = {
 
   getUserStats: async (userId: string): Promise<UserStats> => {
     const response = await api.get<UserStats>(`/api/users/${userId}/stats`);
+    return response.data;
+  },
+
+  getDashboardData: async (userId: string): Promise<DashboardData> => {
+    const response = await api.get<DashboardData>(`/api/users/${userId}/dashboard`);
     return response.data;
   },
 

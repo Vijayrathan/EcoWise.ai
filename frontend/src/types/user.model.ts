@@ -47,3 +47,20 @@ export interface LoginResponse {
   user: User;
 }
 
+export interface DashboardData {
+  ecoChallengesCompleted: number;
+  carbonSaved: number;
+  streakDays: number;
+  recentActivities: Array<{
+    action: string;
+    description: string;
+    date: Date | string;
+  }>;
+  upcomingChallenges: Array<{
+    title: string;
+    description: string;
+    impact: string;
+    category?: string;
+  }>;
+}
+
