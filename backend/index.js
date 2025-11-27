@@ -1,34 +1,48 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
 
-const authRoutes = require('./routes/auth');
-const foodListingRoutes = require('./routes/foodListings');
-const pickupRequestRoutes = require('./routes/pickupRequests');
-const notificationRoutes = require('./routes/notifications');
+const aiRoutes = require("./src/routes/aiRoutes");
+const habitsRoutes = require("./src/routes/habitsRoutes");
+const userRoutes = require("./src/routes/userRoutes");
 
 const app = express();
-app.use(cors());
-app.use(express.json()); 
+app.use(
+  cors({
+    origin: ["http://localhost:4200", "http://localhost:3000"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    exposedHeaders: ["Authorization"],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  })
+);
+
+// Handle preflight requests explicitly
+app.options("*", cors());
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/food-listings', foodListingRoutes);
-app.use('/api/pickup-requests', pickupRequestRoutes);
-app.use('/api/notifications', notificationRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/habits", habitsRoutes);
+app.use("/api/users", userRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
+  res.status(500).json({ message: "Something went wrong!" });
 });
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log('MongoDB connected');
+    console.log("MongoDB connected");
     app.listen(process.env.PORT, () => {
       console.log(`Server running on http://localhost:${process.env.PORT}`);
     });
   })
-  .catch(err => console.error(err));
+  .catch((err) => console.error(err));

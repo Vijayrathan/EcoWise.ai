@@ -13,7 +13,7 @@ EcoWise AI is an intelligent sustainability coach that helps users track, improv
 
 ## Technology Stack
 
-- **Frontend**: Angular
+- **Frontend**: React with TypeScript, Vite
 - **Backend**: Node.js with Express
 - **Database**: MongoDB Atlas for cloud data storage
 - **AI**: Google Gemini API for natural language processing and generative content
@@ -70,8 +70,10 @@ npm run dev
 
 ```
 cd ../frontend
-npm start
+npm run dev
 ```
+
+The frontend will be available at `http://localhost:4200` and the backend at `http://localhost:8081` (or the port specified in your backend .env file).
 
 ## Project Structure
 
@@ -90,10 +92,14 @@ wastezero-app/
 │   └── .env
 ├── frontend/
 │   ├── src/
-│   │   ├── app/
-│   │   ├── assets/
-│   │   └── environments/
-│   └── package.json
+│   │   ├── components/
+│   │   ├── contexts/
+│   │   ├── services/
+│   │   ├── types/
+│   │   ├── config/
+│   │   └── App.tsx
+│   ├── package.json
+│   └── vite.config.ts
 └── README.md
 ```
 

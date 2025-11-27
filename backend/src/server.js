@@ -1,10 +1,20 @@
+require("dotenv").config();
+// Polyfill for SlowBuffer (removed in Node.js v25)
+// This is needed for buffer-equal-constant-time used by jsonwebtoken
+const bufferModule = require("buffer");
+if (!bufferModule.SlowBuffer) {
+  bufferModule.SlowBuffer = Buffer;
+}
+
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
 const dotenv = require("dotenv");
 
 // Load environment variables
 dotenv.config();
+
+// Import middleware
+const corsMiddleware = require("./middleware/cors");
 
 // Import routes
 const userRoutes = require("./routes/userRoutes");
@@ -15,9 +25,11 @@ const aiRoutes = require("./routes/aiRoutes");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
+// CORS middleware - must be before other middleware
+app.use(corsMiddleware);
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Log all requests
 app.use((req, res, next) => {
@@ -49,7 +61,7 @@ app.use((err, req, res, next) => {
 
 // Connect to MongoDB
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("Connected to MongoDB Atlas");
     // Start server after successful DB connection
